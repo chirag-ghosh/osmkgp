@@ -5,6 +5,7 @@ include(CTest)
 enable_testing()
 
 include_directories(${PROJECT_SOURCE_DIR}/libs/rapidxml)
+include_directories(${PROJECT_SOURCE_DIR}/models)
 
 add_executable(OSMKGP main.cpp)
 
