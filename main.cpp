@@ -16,15 +16,6 @@
 using namespace std;
 using namespace rapidxml;
 
-// not running. will debug later
-xml_node<> *getRootNode(rapidxml::file<> xmlFile) {
-    rapidxml::xml_document<> doc;
-    doc.parse<0>(xmlFile.data());
-    static xml_node<> *rootNode = doc.first_node("osm");
-
-    return rootNode;
-}
-
 int getNodeCount(xml_node<> *rootNode, const char *nodeName) {
     int nodeCount = 0;
     for (xml_node<> *myNode = rootNode->first_node(nodeName); myNode; myNode = myNode->next_sibling()) {
