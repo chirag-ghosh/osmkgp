@@ -7,11 +7,19 @@
 #include <vector>
 
 // models
+#include "graph.hpp"
+#include "heap.hpp"
 #include "node.hpp"
 #include "way.hpp"
 
 // helpers
 #include "helper.cpp"
+
+//heap methods
+#include "minHeap.cpp"
+
+//djikstra methods
+#include "djikstra.cpp"
 
 // rapidxml parser
 #include "rapidxml.hpp"
@@ -111,8 +119,8 @@ void getNodeByName(Node *nodeList, int nodeCount) {
     }
 }
 
-Node getNodeByID(Node *nodeList, int nodeCount) {
-    int ID;
+Node getNodeFromUser(Node *nodeList, int nodeCount) {
+    long long int ID;
     cout << "Enter a Node ID : ";
     cin >> ID;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -123,6 +131,14 @@ Node getNodeByID(Node *nodeList, int nodeCount) {
 
     cout << "No such ID found" << endl;
     return {0, NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL};
+}
+
+int getNodeIndexFromID(Node *nodeList, int nodeCount, long long int ID) {
+    for (int i = 0; i < nodeCount; i++) {
+        if (nodeList[i].ID == ID) return i;
+    }
+
+    return -1;
 }
 
 vector<NodeWithDistance> getNodeDistanceVector(Node a, Node *nodeList, int nodeCount) {
@@ -144,6 +160,21 @@ Way getWayByName(Way *wayList, int wayCount) {
             cout << wayList[i].ID << " " << wayList[i].name << endl;
     }
     return wayList[0];
+}
+
+Graph *makeGraphFromWays(Way *wayList, int wayCount, Node *nodeList, int nodeCount) {
+    Graph *G = (Graph *)malloc(sizeof(Graph));
+    G = createGraph(wayCount);
+
+    for (int i = 0; i < wayCount; i++) {
+        for (int j = 0; j < wayList[i].nodeRefList.size() - 1; j++) {
+            int srcIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j]);
+            int destIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j] + 1);
+            addEdge(G, srcIndex, destIndex, getDisplacement(nodeList[srcIndex], nodeList[destIndex]));
+        }
+    }
+
+    return G;
 }
 
 int main(int argc, char const *argv[]) {
@@ -196,19 +227,40 @@ int main(int argc, char const *argv[]) {
                 break;
 
             case 2: {
-                Node selectedNode = getNodeByID(nodeList, nodeCount);
+                Node selectedNode = getNodeFromUser(nodeList, nodeCount);
                 if (selectedNode.ID != 0) {
                     vector<NodeWithDistance> nodeWithDistanceList = getNodeDistanceVector(selectedNode, nodeList, nodeCount);
                     nodeWithDistanceList = sortNodeWithDistanceList(nodeWithDistanceList);
                     cout << "Enter the number of closest nodes you need : ";
                     int k;
                     cin >> k;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     cout << "ID\tDistance\tName" << endl;
                     for (int i = 1; i < k; i++) {
                         cout << nodeWithDistanceList[i].node.ID << "\t" << nodeWithDistanceList[i].distance << "\t" << nodeWithDistanceList[i].node.name << endl;
                     }
                 }
                 break;
+            }
+
+            case 3: {
+                cout << "Creating graph from ways" << endl;
+                Graph *graph = (Graph *)malloc(sizeof(Graph));
+                graph = makeGraphFromWays(wayList, wayCount, nodeList, nodeCount);
+                cout << "Created graph" << endl;
+
+                cout << "Select a source node" << endl;
+                Node srcNode = getNodeFromUser(nodeList, nodeCount);
+                cout << "Select a destination node" << endl;
+                Node destNode = getNodeFromUser(nodeList, nodeCount);
+
+                cout << "Using Djikstra Shortest path algorithm to find the shortest path for you....." << endl;
+                double distance = dijkstra(graph, getNodeIndexFromID(nodeList, nodeCount, srcNode.ID), getNodeIndexFromID(nodeList, nodeCount, destNode.ID));
+
+                if (distance == -1)
+                    cout << "Sorry. No road connects these IDs" << endl;
+                else
+                    cout << "The shortest distance is : " << distance << endl;
             }
 
             default:
