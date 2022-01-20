@@ -24,8 +24,8 @@ Graph* createGraph(int V) {
 }
 
 void addEdge(Graph* graph, int src, int dest, double weight) {
-    AdjListNode* newNode =
-        newAdjListNode(dest, weight);
+    AdjListNode* newNode = (AdjListNode*)malloc(sizeof(AdjListNode));
+    newNode = newAdjListNode(dest, weight);
     newNode->next = graph->adjList[src].head;
     graph->adjList[src].head = newNode;
     newNode = newAdjListNode(src, weight);

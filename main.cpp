@@ -90,7 +90,7 @@ Way *getWayList(xml_node<> *rootNode, int count) {
         newNode.uid = atoi(myNode->first_attribute("uid")->value());
         for (xml_node<> *tagNode = myNode->first_node("nd"); tagNode; tagNode = tagNode->next_sibling()) {
             if (strcmp(tagNode->name(), "nd") != 0) continue;
-            newNode.nodeRefList.push_back(atoi(tagNode->first_attribute("ref")->value()));
+            newNode.nodeRefList.push_back(stoll(tagNode->first_attribute("ref")->value()));
         }
 
         bool foundName = false;
@@ -164,12 +164,12 @@ Way getWayByName(Way *wayList, int wayCount) {
 
 Graph *makeGraphFromWays(Way *wayList, int wayCount, Node *nodeList, int nodeCount) {
     Graph *G = (Graph *)malloc(sizeof(Graph));
-    G = createGraph(wayCount);
+    G = createGraph(nodeCount);
 
     for (int i = 0; i < wayCount; i++) {
         for (int j = 0; j < wayList[i].nodeRefList.size() - 1; j++) {
             int srcIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j]);
-            int destIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j] + 1);
+            int destIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j + 1]);
             addEdge(G, srcIndex, destIndex, getDisplacement(nodeList[srcIndex], nodeList[destIndex]));
         }
     }

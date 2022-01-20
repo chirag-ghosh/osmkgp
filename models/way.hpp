@@ -8,6 +8,6 @@ typedef struct _way {
     char* timestamp;
     char* user;
     int uid;
-    std::vector<int> nodeRefList;
+    std::vector<long long int> nodeRefList;
     char* name;
 } Way;
