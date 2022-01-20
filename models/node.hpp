@@ -1,5 +1,5 @@
 typedef struct _node {
-    int ID;
+    long long int ID;
     char* visible;
     int version;
     int changeset;

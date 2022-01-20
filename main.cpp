@@ -1,12 +1,17 @@
 // system includes
 #include <string.h>
 
+#include <ios>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 // models
 #include "node.hpp"
 #include "way.hpp"
+
+// helpers
+#include "helper.cpp"
 
 // rapidxml parser
 #include "rapidxml.hpp"
@@ -33,7 +38,7 @@ Node *getNodeList(xml_node<> *rootNode, int count) {
     for (xml_node<> *myNode = rootNode->first_node("node"); myNode; myNode = myNode->next_sibling()) {
         if (strcmp(myNode->name(), "node") != 0) continue;
         Node newNode;
-        newNode.ID = atoi(myNode->first_attribute("id")->value());
+        newNode.ID = stoll(myNode->first_attribute("id")->value());
         newNode.visible = myNode->first_attribute("visible")->value();
         newNode.version = atoi(myNode->first_attribute("version")->value());
         newNode.changeset = atoi(myNode->first_attribute("changeset")->value());
@@ -43,12 +48,15 @@ Node *getNodeList(xml_node<> *rootNode, int count) {
         newNode.latitude = atof(myNode->first_attribute("lat")->value());
         newNode.longitude = atof(myNode->first_attribute("lon")->value());
 
+        bool foundName = false;
         for (xml_node<> *tagNode = myNode->first_node("tag"); tagNode; tagNode = tagNode->next_sibling()) {
             if (strcmp(tagNode->name(), "tag") != 0) continue;
             if (strcmp(tagNode->first_attribute("k")->value(), "name") == 0) {
                 newNode.name = tagNode->first_attribute("v")->value();
+                foundName = true;
             }
         }
+        if (!foundName) newNode.name = "";
 
         nodeList[tempCount++] = newNode;
     }
@@ -76,16 +84,46 @@ Way *getWayList(xml_node<> *rootNode, int count) {
             if (strcmp(tagNode->name(), "nd") != 0) continue;
             newNode.nodeRefList.push_back(atoi(tagNode->first_attribute("ref")->value()));
         }
+
+        bool foundName = false;
         for (xml_node<> *tagNode = myNode->first_node("tag"); tagNode; tagNode = tagNode->next_sibling()) {
             if (strcmp(tagNode->name(), "tag") == 0 && strcmp(tagNode->first_attribute("k")->value(), "name") == 0) {
                 newNode.name = tagNode->first_attribute("v")->value();
+                foundName = true;
             }
         }
+        if (!foundName) newNode.name = "";
 
         wayList[tempCount++] = newNode;
     }
 
     return wayList;
+}
+
+Node getNodeByName(Node *nodeList, int nodeCount) {
+    string nameSearch;
+    cout << "Enter a name to search : ";
+    getline(cin, nameSearch);
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    for (int i = 0; i < nodeCount; i++) {
+        if (isSubstring(nodeList[i].name, nameSearch))
+            cout << nodeList[i].ID << " " << nodeList[i].name << endl;
+    }
+    return nodeList[0];
+}
+
+Way getWayByName(Way *wayList, int wayCount) {
+    string nameSearch;
+    cout << "Enter a name to search : ";
+    getline(cin, nameSearch);
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    for (int i = 0; i < wayCount; i++) {
+        if (isSubstring(wayList[i].name, nameSearch))
+            cout << wayList[i].ID << " " << wayList[i].name << endl;
+    }
+    return wayList[0];
 }
 
 int main(int argc, char const *argv[]) {
@@ -94,16 +132,55 @@ int main(int argc, char const *argv[]) {
     rapidxml::file<> xmlFile("map.osm");
     doc.parse<0>(xmlFile.data());
     xml_node<> *rootNode = doc.first_node("osm");
+    cout << ".osm file found." << endl;
 
     int nodeCount = getNodeCount(rootNode, "node");
     int wayCount = getNodeCount(rootNode, "way");
 
-    cout << "Total nodes : " << nodeCount << endl;
+    cout << endl
+         << "Total nodes : " << nodeCount << endl;
     cout << "Total ways : " << wayCount << endl;
 
     Node *nodeList = (Node *)malloc(nodeCount * sizeof(Node));
     Way *wayList = (Way *)malloc(wayCount * sizeof(Way));
     nodeList = getNodeList(rootNode, nodeCount);
     wayList = getWayList(rootNode, wayCount);
+
+    cout << endl
+         << "Loaded nodes and ways with attributes to memory" << endl
+         << endl;
+
+    cout << "Welcome to main-menu" << endl;
+    int choice = 0, subChoice = 0;
+    do {
+        cout << "1. Search a node or way by name" << endl;
+        cout << "2. Find k-closest nodes to a given node (crow-fly distance)" << endl;
+        cout << "3. Find the shortest path between 2 nodes via ways" << endl;
+        cout << "Enter options 1-3. Enter -1 to exit. Enter anything else to repeat this message" << endl
+             << endl;
+
+        cin >> choice;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (choice) {
+            case 1:
+                cout << "Enter 1 to search nodes and 2 to search ways." << endl;
+                cin >> subChoice;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (subChoice == 1)
+                    getNodeByName(nodeList, nodeCount);
+                else if (subChoice == 2)
+                    getWayByName(wayList, wayCount);
+                else
+                    cout << "Invalid Choice" << endl;
+                break;
+
+            default:
+                break;
+        }
+    } while (choice != -1);
+
+    cout << "Exiting. Have a nice day" << endl;
+
     return 0;
 }
