@@ -100,17 +100,37 @@ Way *getWayList(xml_node<> *rootNode, int count) {
     return wayList;
 }
 
-Node getNodeByName(Node *nodeList, int nodeCount) {
+void getNodeByName(Node *nodeList, int nodeCount) {
     string nameSearch;
     cout << "Enter a name to search : ";
     getline(cin, nameSearch);
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     for (int i = 0; i < nodeCount; i++) {
         if (isSubstring(nodeList[i].name, nameSearch))
             cout << nodeList[i].ID << " " << nodeList[i].name << endl;
     }
-    return nodeList[0];
+}
+
+Node getNodeByID(Node *nodeList, int nodeCount) {
+    int ID;
+    cout << "Enter a Node ID : ";
+    cin >> ID;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    for (int i = 0; i < nodeCount; i++) {
+        if (nodeList[i].ID == ID) return nodeList[i];
+    }
+
+    cout << "No such ID found" << endl;
+    return {0, NULL, 0, 0, NULL, 0, 0, 0, NULL, NULL};
+}
+
+vector<NodeWithDistance> getNodeDistanceVector(Node a, Node *nodeList, int nodeCount) {
+    static vector<NodeWithDistance> distanceList;
+    for (int i = 0; i < nodeCount; i++) {
+        distanceList.push_back({nodeList[i], getDisplacement(a, nodeList[i])});
+    }
+    return distanceList;
 }
 
 Way getWayByName(Way *wayList, int wayCount) {
@@ -174,6 +194,22 @@ int main(int argc, char const *argv[]) {
                 else
                     cout << "Invalid Choice" << endl;
                 break;
+
+            case 2: {
+                Node selectedNode = getNodeByID(nodeList, nodeCount);
+                if (selectedNode.ID != 0) {
+                    vector<NodeWithDistance> nodeWithDistanceList = getNodeDistanceVector(selectedNode, nodeList, nodeCount);
+                    nodeWithDistanceList = sortNodeWithDistanceList(nodeWithDistanceList);
+                    cout << "Enter the number of closest nodes you need : ";
+                    int k;
+                    cin >> k;
+                    cout << "ID\tDistance\tName" << endl;
+                    for (int i = 1; i < k; i++) {
+                        cout << nodeWithDistanceList[i].node.ID << "\t" << nodeWithDistanceList[i].distance << "\t" << nodeWithDistanceList[i].node.name << endl;
+                    }
+                }
+                break;
+            }
 
             default:
                 break;

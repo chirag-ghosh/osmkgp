@@ -10,3 +10,8 @@ typedef struct _node {
     char* timestamp;
     char* name;
 } Node;
+
+typedef struct _node_with_distance {
+    Node node;
+    double distance;
+} NodeWithDistance;
