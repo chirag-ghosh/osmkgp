@@ -18,8 +18,8 @@
 //heap methods
 #include "minHeap.cpp"
 
-//djikstra methods
-#include "djikstra.cpp"
+//dijkstra methods
+#include "dijkstra.cpp"
 
 // rapidxml parser
 #include "rapidxml.hpp"
