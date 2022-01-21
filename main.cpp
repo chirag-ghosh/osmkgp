@@ -166,6 +166,7 @@ Graph *makeGraphFromWays(Way *wayList, int wayCount, Node *nodeList, int nodeCou
     Graph *G = (Graph *)malloc(sizeof(Graph));
     G = createGraph(nodeCount);
 
+    //the dijkstra code will use index of node in nodeList
     for (int i = 0; i < wayCount; i++) {
         for (int j = 0; j < wayList[i].nodeRefList.size() - 1; j++) {
             int srcIndex = getNodeIndexFromID(nodeList, nodeCount, wayList[i].nodeRefList[j]);
@@ -183,7 +184,7 @@ int main(int argc, char const *argv[]) {
     rapidxml::file<> xmlFile("map.osm");
     doc.parse<0>(xmlFile.data());
     xml_node<> *rootNode = doc.first_node("osm");
-    cout << ".osm file found." << endl;
+    cout << "OSM file found." << endl;
 
     int nodeCount = getNodeCount(rootNode, "node");
     int wayCount = getNodeCount(rootNode, "way");
@@ -199,6 +200,12 @@ int main(int argc, char const *argv[]) {
 
     cout << endl
          << "Loaded nodes and ways with attributes to memory" << endl
+         << endl;
+
+    cout << "Creating graph from ways" << endl;
+    Graph *graph = (Graph *)malloc(sizeof(Graph));
+    graph = makeGraphFromWays(wayList, wayCount, nodeList, nodeCount);
+    cout << "Created graph" << endl
          << endl;
 
     cout << "Welcome to main-menu" << endl;
@@ -236,7 +243,7 @@ int main(int argc, char const *argv[]) {
                     cin >> k;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     cout << "ID\tDistance\tName" << endl;
-                    for (int i = 1; i < k; i++) {
+                    for (int i = 1; i <= k; i++) {
                         cout << nodeWithDistanceList[i].node.ID << "\t" << nodeWithDistanceList[i].distance << "\t" << nodeWithDistanceList[i].node.name << endl;
                     }
                 }
@@ -244,11 +251,6 @@ int main(int argc, char const *argv[]) {
             }
 
             case 3: {
-                cout << "Creating graph from ways" << endl;
-                Graph *graph = (Graph *)malloc(sizeof(Graph));
-                graph = makeGraphFromWays(wayList, wayCount, nodeList, nodeCount);
-                cout << "Created graph" << endl;
-
                 cout << "Select a source node" << endl;
                 Node srcNode = getNodeFromUser(nodeList, nodeCount);
                 cout << "Select a destination node" << endl;

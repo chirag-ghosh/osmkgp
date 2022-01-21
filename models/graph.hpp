@@ -1,5 +1,5 @@
 typedef struct _adjListNode {
-    long long int ID;
+    long long int index;
     double weight;
     struct _adjListNode* next;
 } AdjListNode;
